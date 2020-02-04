@@ -94,10 +94,64 @@
 	<script src="/socket.io/socket.io.js"></script>
 
 	<script>
-		const socket=io();
+		
+		var socket=io();
+		
 		socket.on('object', (data)=>{
 			console.log('line 3', data.name);
 		});
+			var message=document.querySelector('#message');
+			var chat=document.querySelector('#chatWindow');
+			var username=document.querySelector('#username');
+
+
+			document.querySelector('#usernameForm').addEventListener('submit', (e)=>{
+				e.preventDefault();
+				// console.log('submitted userNameForm!');
+				// call 'new user' and pass username... 
+				//'(data)' is a callback he will recive data after responding 'new user'
+				// (data) will receive boolean value
+
+				socket.emit('new user', username.value, (data)=>{
+					console.log(username.value,  "data"  , data)
+					if(data){
+						document.querySelector('#namesWrapper').style.display='none'; //Hide user wrapper
+						document.querySelector('#mainWrapper').style.display='block'; //Display main wrapper
+					}else{
+						document.querySelector('#error').innerHTML='username exist!'; // just display message on user wrapper
+					}
+				});
+			});
+
+			socket.on('userNames', (data)=>{
+				var html='';
+				for(i=0; i<data.length; i++){
+					html+=data[i] +"<br>"
+				}
+				document.querySelector('#users').innerHTML=html;
+
+			});
+
+			document.querySelector('#messageForm').addEventListener('submit', (e)=>{
+				e.preventDefault();
+				console.log('Submitted!' ,message);
+				//get message from input element
+				socket.emit('send message' ,message.value);
+				message.value='';
+			});
+
+			socket.on('typing', (data)=>{
+				console.log('typing 146 client');
+				document.querySelector('#typing').innerHTML='<p>'+data +' is typing</p>'	
+			})
+
+			socket.on('new message', (data)=>{
+				if(data.user)
+				 return chat.innerHTML +=`<strong> ${data.user} : </strong> ${data.msg} <span style="float:right"> ${data.date} </span> <br>`;
+				 
+				 document.querySelector('#mainWrapper').style.display='none';
+				 document.querySelector('#namesWrapper').style.display='block';
+			});
 	</script>
 
 
