@@ -24,9 +24,9 @@
 
 		#chatWrapper {
 			float: left;
-			border: 1px #ccc solid;
-			border-radius: 10px;
-			background: #f4f4f4;
+			/* border: 1px #ccc solid; */
+			border-radius: 10px 10px 0px 0px;
+			background: #e6ffff;
 			padding: 10px;
 			height: 350px;
 			overflow-y: scroll;
@@ -35,9 +35,9 @@
 
 		#userWrapper {
 			float: left;
-			border: 1px #ccc solid;
+			/* border: 1px #ccc solid; */
 			border-radius: 10px;
-			background: #f4f4f4;
+			background: #e6ffff;
 			padding: 10px;
 			margin-left: 20px;
 			width: 150px;
@@ -49,7 +49,7 @@
 			float: left;
 			border: 1px #ccc solid;
 			border-radius: 10px;
-			background: #f4f4f4;
+			background: #e6ffff;
 			padding: 10px;
 			margin-left: 20px;
 		}
@@ -61,11 +61,11 @@
 	</style>
 </head>
 
-<body>
+<body style="background-color: #ffffcc;">
 	
 	<div id="container">
 		<div id="namesWrapper">
-			<h2>WhatsApp</h2>
+			<h2>ChatApp</h2>
 			<p>Create Username:</p>
 			<div id="error" style="color:#ff0000"></div>
 			<form id="usernameForm">
@@ -75,85 +75,85 @@
 		</div>
 
 		<div id="mainWrapper">
-			<h2>WhatsApp</h2>
-			<div id="chatWrapper">
+			<h2>ChatApp</h2>
+			 
+			<div id="chatWrapper" style="width:380px">
 				<div id="chatWindow"></div>
 				<div id="typing"></div>
-				<form id="messageForm">
-					<input type="text" size="35" id="message" placeholder="Say Something...">
-					<input type="submit" value="Submit">
-				</form>
 			</div>
-
 			<div id="userWrapper">
 				<div id="users"></div>
 			</div>
+		 
+		<div style="width:394px; background: #e6ffff; padding:10px">
+			<form id="messageForm" style="margin-left:15px">
+				<input type="text" size="35" id="message" placeholder="Say Something...">
+				<input type="submit" value="Submit">
+			</form>
+		</div>
 		</div>
 	</div>
 	<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
+<script>
+	
+	var socket=io();
+	
+	socket.on('object', (data)=>{
+		console.log('line 3', data.name);
+	});
+		var message=document.querySelector('#message');
+		var chat=document.querySelector('#chatWindow');
+		var username=document.querySelector('#username');
 
-	<script>
-		
-		var socket=io();
-		
-		socket.on('object', (data)=>{
-			console.log('line 3', data.name);
-		});
-			var message=document.querySelector('#message');
-			var chat=document.querySelector('#chatWindow');
-			var username=document.querySelector('#username');
 
+		document.querySelector('#usernameForm').addEventListener('submit', (e)=>{
+			e.preventDefault();
+			// console.log('submitted userNameForm!');
+			// call 'new user' and pass username... 
+			//'(data)' is a callback he will recive data after responding 'new user'
+			// (data) will receive boolean value
 
-			document.querySelector('#usernameForm').addEventListener('submit', (e)=>{
-				e.preventDefault();
-				// console.log('submitted userNameForm!');
-				// call 'new user' and pass username... 
-				//'(data)' is a callback he will recive data after responding 'new user'
-				// (data) will receive boolean value
-
-				socket.emit('new user', username.value, (data)=>{
-					console.log(username.value,  "data"  , data)
-					if(data){
-						document.querySelector('#namesWrapper').style.display='none'; //Hide user wrapper
-						document.querySelector('#mainWrapper').style.display='block'; //Display main wrapper
-					}else{
-						document.querySelector('#error').innerHTML='username exist!'; // just display message on user wrapper
-					}
-				});
-			});
-
-			socket.on('userNames', (data)=>{
-				var html='';
-				for(i=0; i<data.length; i++){
-					html+=data[i] +"<br>"
+			socket.emit('new user', username.value, (data)=>{
+				console.log(username.value,  "data"  , data)
+				if(data){
+					document.querySelector('#namesWrapper').style.display='none'; //Hide user wrapper
+					document.querySelector('#mainWrapper').style.display='block'; //Display main wrapper
+				}else{
+					document.querySelector('#error').innerHTML='username exist!'; // just display message on user wrapper
 				}
-				document.querySelector('#users').innerHTML=html;
-
 			});
+		});
 
-			document.querySelector('#messageForm').addEventListener('submit', (e)=>{
-				e.preventDefault();
-				console.log('Submitted!' ,message);
-				//get message from input element
-				socket.emit('send message' ,message.value);
-				message.value='';
-			});
+		socket.on('userNames', (data)=>{
+			var html='';
+			for(i=0; i<data.length; i++){
+				html+=data[i] +"<br>"
+			}
+			document.querySelector('#users').innerHTML=html;
 
-			socket.on('typing', (data)=>{
-				console.log('typing 146 client');
-				document.querySelector('#typing').innerHTML='<p>'+data +' is typing</p>'	
-			})
+		});
 
-			socket.on('new message', (data)=>{
-				if(data.user)
-				 return chat.innerHTML +=`<strong> ${data.user} : </strong> ${data.msg} <span style="float:right"> ${data.date} </span> <br>`;
-				 
-				 document.querySelector('#mainWrapper').style.display='none';
-				 document.querySelector('#namesWrapper').style.display='block';
-			});
-	</script>
+		document.querySelector('#messageForm').addEventListener('submit', (e)=>{
+			e.preventDefault();
+			console.log('Submitted!' ,message);
+			//get message from input element
+			socket.emit('send message' ,message.value);
+			message.value='';
+		});
 
+		socket.on('typing', (data)=>{
+			console.log('typing 146 client');
+			document.querySelector('#typing').innerHTML='<p>'+data +' is typing</p>'	
+		})
 
+		socket.on('new message', (data)=>{
+			if(data.user)
+				return chat.innerHTML +=`<strong> ${data.user} : </strong> ${data.msg} <span style="float:right"> ${data.date} </span> <br>`;
+				
+				document.querySelector('#mainWrapper').style.display='none';
+				document.querySelector('#namesWrapper').style.display='block';
+		});
+</script>
 </body>
 </html>
